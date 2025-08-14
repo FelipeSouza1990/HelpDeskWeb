@@ -1,0 +1,83 @@
+@model HelpDesk.Models.Ticket
+@using HelpDesk.Models
+@using System.Linq
+
+<h2>Editar Ticket #@Model.Id</h2>
+<form method="post">
+  <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+  <input type="hidden" asp-for="Id" />
+
+  <label>Título
+    <input asp-for="Title" />
+    <span asp-validation-for="Title" class="text-danger"></span>
+  </label>
+
+  <label>Email do Cliente
+    <input asp-for="CustomerEmail" type="email" />
+    <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+  </label>
+
+  <label>Severidade
+    <select asp-for="Severity" asp-items="Html.GetEnumSelectList<TicketSeverity>()"></select>
+  </label>
+
+  <label>Status
+    <select asp-for="Status" asp-items="Html.GetEnumSelectList<TicketStatus>()"></select>
+  </label>
+
+  <label>Descrição
+    <textarea asp-for="Description" rows="4"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+  </label>
+
+  <button type="submit" class="btn">Salvar</button>
+</form>
+
+<hr />
+<h3>Logs de correção</h3>
+<table class="table" id="logsTable">
+  <thead><tr><th>Quando</th><th>Engenheiro</th><th>Notas</th></tr></thead>
+  <tbody>
+    @foreach (var log in (Model.FixLogs ?? Enumerable.Empty<FixLog>()).OrderByDescending(l => l.LoggedAt)) {
+      <tr><td>@log.LoggedAt.ToLocalTime()</td><td>@log.Engineer</td><td>@log.Notes</td></tr>
+    }
+  </tbody>
+</table>
+
+<form id="addLogForm">
+  <input type="hidden" id="ticketId" value="@Model.Id" />
+  <div style="display:flex; gap:8px; max-width:800px;">
+    <input id="engineer" placeholder="Seu nome" required />
+    <input id="notes" placeholder="Notas" required style="flex:1;" />
+    <button class="btn" type="submit">Adicionar log</button>
+  </div>
+</form>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+  <script>
+    document.getElementById('addLogForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('ticketId').value;
+      const engineer = document.getElementById('engineer').value.trim();
+      const notes = document.getElementById('notes').value.trim();
+      if (!engineer || !notes) return;
+      const res = await fetch('/Tickets/AddLog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ ticketId: id, engineer, notes })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const tr = document.createElement('tr');
+        const when = new Date(data.loggedAt).toLocaleString();
+        tr.innerHTML = `<td>${when}</td><td>${data.engineer}</td><td>${data.notes}</td>`;
+        document.querySelector('#logsTable tbody').prepend(tr);
+        document.getElementById('notes').value='';
+      } else {
+        alert('Falha ao adicionar log');
+      }
+    });
+  </script>
+}

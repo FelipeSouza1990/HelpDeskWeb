@@ -1,0 +1,17 @@
+@{
+  var byStatus = (IEnumerable<dynamic>) (ViewBag.ByStatus ?? new List<object>());
+  var bySeverity = (IEnumerable<dynamic>) (ViewBag.BySeverity ?? new List<object>());
+  double avg = ViewBag.AvgHrs ?? 0;
+}
+<h1>Dashboard</h1>
+<div style="display:grid;grid-template-columns: repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+  <div class="card"><h3>Status</h3><ul>
+    @foreach (var it in byStatus) { <li>@it.Status: <strong>@it.Count</strong></li> }
+  </ul></div>
+  <div class="card"><h3>Severidade</h3><ul>
+    @foreach (var it in bySeverity) { <li>@it.Severity: <strong>@it.Count</strong></li> }
+  </ul></div>
+  <div class="card"><h3>Média p/ resolver</h3>
+    <p><strong>@Math.Round(avg,1)</strong> h</p>
+  </div>
+</div>

@@ -1,0 +1,37 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HelpDesk • @ViewData["Title"]</title>
+  <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+  <div class="app-shell">
+    <nav class="nav">
+      <a class="brand" asp-controller="Tickets" asp-action="Index">
+        <span class="dot"></span> HelpDesk
+      </a>
+      <a asp-controller="Tickets" asp-action="Index">Tickets</a>
+      <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+      <a href="/swagger" target="_blank">Swagger</a>
+      <span class="spacer"></span>
+      <button class="theme-btn" onclick="toggleTheme()"
+        title="Alternar modo claro/escuro">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64 13a9 9 0 1 1-10.63-10.7 1 1 0 0 1 1.11 1.46A7 7 0 1 0 20.18 12a1 1 0 0 1 1.46 1z"/></svg>
+        Tema
+      </button>
+    </nav>
+
+    <main class="mt16">
+      @RenderBody()
+    </main>
+  </div>
+
+  <div class="toast-area"></div>
+
+  <script src="~/js/site.js" asp-append-version="true"></script>
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

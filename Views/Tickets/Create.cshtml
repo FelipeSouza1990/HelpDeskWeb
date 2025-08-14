@@ -1,0 +1,28 @@
+﻿@model HelpDesk.Models.Ticket
+<h2>Novo Ticket</h2>
+<form method="post">
+  <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+  <label>Título
+    <input asp-for="Title" />
+    <span asp-validation-for="Title" class="text-danger"></span>
+  </label>
+
+  <label>Email do Cliente
+    <input asp-for="CustomerEmail" type="email" />
+    <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+  </label>
+
+  <label>Severidade
+    <select asp-for="Severity" asp-items="Html.GetEnumSelectList<HelpDesk.Models.TicketSeverity>()"></select>
+    <span asp-validation-for="Severity" class="text-danger"></span>
+  </label>
+
+  <label>Descrição
+    <textarea asp-for="Description" rows="4"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+  </label>
+
+  <button type="submit" class="btn">Salvar</button>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

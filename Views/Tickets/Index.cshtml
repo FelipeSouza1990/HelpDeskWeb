@@ -1,0 +1,127 @@
+﻿@using HelpDesk.Models
+@using HelpDesk.ViewModels
+@model IEnumerable<HelpDesk.Models.Ticket>
+@{
+    ViewData["Title"] = "Tickets";
+    var q = ViewBag.Query as TicketQuery ?? new TicketQuery();
+    var total = ViewBag.Total is int totalCount ? totalCount : 0;  // << mudou de "t" para "totalCount"
+    var pageCount = (int)Math.Ceiling((double)total / Math.Max(1, q.PageSize));
+
+    string StatusBadge(TicketStatus s) => s switch {
+        TicketStatus.Open => "badge status-open dot",
+        TicketStatus.InProgress => "badge status-inprog dot",
+        TicketStatus.Resolved => "badge status-resolved dot",
+        _ => "badge"
+    };
+    string SevBadge(TicketSeverity s) => s switch {
+        TicketSeverity.Low => "badge sev-low",
+        TicketSeverity.Medium => "badge sev-med",
+        TicketSeverity.High => "badge sev-high",
+        _ => "badge"
+    };
+}
+
+<div class="panel">
+  <div class="flex">
+    <h1 class="m0">Tickets</h1>
+    <a class="btn primary right" asp-controller="Tickets" asp-action="Create">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></svg>
+      Novo Ticket
+    </a>
+  </div>
+
+  <form method="get" class="mt12">
+    <div class="row">
+      <div class="col-6">
+        <label>Buscar</label>
+        <input type="text" name="Search" value="@q.Search" placeholder="Título, descrição, e-mail" />
+      </div>
+      <div class="col-3">
+        <label>Status</label>
+        <select name="Status">
+          <option value="">-- Todos --</option>
+          @foreach (var st in Enum.GetValues<TicketStatus>()) {
+            <option value="@st" selected="@(q.Status == st)">@st</option>
+          }
+        </select>
+      </div>
+      <div class="col-3">
+        <label>Severidade</label>
+        <select name="Severity">
+          <option value="">-- Todas --</option>
+          @foreach (var sv in Enum.GetValues<TicketSeverity>()) {
+            <option value="@sv" selected="@(q.Severity == sv)">@sv</option>
+          }
+        </select>
+      </div>
+    </div>
+    <input type="hidden" name="Page" value="1" />
+    <input type="hidden" name="PageSize" value="@q.PageSize" />
+    <div class="mt12">
+      <button class="btn">Aplicar filtros</button>
+      <a class="btn ghost" asp-controller="Tickets" asp-action="Index">Limpar</a>
+    </div>
+  </form>
+</div>
+
+<div class="mt16 table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Id</th><th>Título</th><th>Cliente</th><th>Severidade</th><th>Status</th><th>Estimativa</th><th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var t in Model ?? Enumerable.Empty<Ticket>()) {
+        <tr data-id="@t.Id">
+          <td>@t.Id</td>
+          <td>@t.Title</td>
+          <td>@t.CustomerEmail</td>
+          <td><span class="@SevBadge(t.Severity)">@t.Severity</span></td>
+          <td class="status"><span class="@StatusBadge(t.Status)">@t.Status</span></td>
+          <td>@(t.EstimatedEffortHours?.ToString() ?? "-") h</td>
+          <td class="flex">
+            <a class="btn" asp-controller="Tickets" asp-action="Edit" asp-route-id="@t.Id">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42L18.37 3.29a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.83z"/></svg>
+              Editar
+            </a>
+            <button class="btn status-btn" data-status="InProgress" type="button">Iniciar</button>
+            <button class="btn status-btn" data-status="Resolved" type="button">Resolver</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<nav class="pager">
+  @for (int p = 1; p <= Math.Max(1, pageCount); p++) {
+    var active = p == Math.Max(1, q.Page) ? "active" : "";
+    <a class="@active" href="?Search=@q.Search&Status=@q.Status&Severity=@q.Severity&Page=@p&PageSize=@q.PageSize">@p</a>
+  }
+</nav>
+
+@section Scripts {
+<script>
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.status-btn'); if (!btn) return;
+  const tr = btn.closest('tr'); const id = tr.getAttribute('data-id');
+  const newStatus = btn.getAttribute('data-status');
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/tickets/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+    tr.querySelector('.status').innerHTML = `<span class="badge ${newStatus==='Resolved'?'status-resolved':(newStatus==='InProgress'?'status-inprog':'status-open')}">${newStatus}</span>`;
+    toast(`Ticket #${id} → ${newStatus}`);
+  } catch (err) {
+    alert('Falha ao atualizar: ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+}
