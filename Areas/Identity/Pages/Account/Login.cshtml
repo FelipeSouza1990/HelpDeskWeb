@@ -1,0 +1,40 @@
+@page
+@model HelpDeskWeb.Areas.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Entrar";
+}
+
+<div class="panel">
+  <h2 class="m0">Entrar</h2>
+  <form method="post" class="mt12">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="row">
+      <div class="col-12">
+        <label>E-mail</label>
+        <input asp-for="Input.Email" type="email" autocomplete="username" />
+        <span asp-validation-for="Input.Email" class="text-danger"></span>
+      </div>
+
+      <div class="col-12">
+        <label>Senha</label>
+        <input asp-for="Input.Password" type="password" autocomplete="current-password" />
+        <span asp-validation-for="Input.Password" class="text-danger"></span>
+      </div>
+
+      <div class="col-12">
+        <label class="flex">
+          <input asp-for="Input.RememberMe" type="checkbox" style="width:auto" />
+          <span>Lembrar-me</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="mt16">
+      <button class="btn primary" type="submit">Entrar</button>
+      <a class="btn ghost" asp-area="Identity" asp-page="/Account/Register" asp-route-returnUrl="@Model.ReturnUrl">Criar conta</a>
+    </div>
+  </form>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

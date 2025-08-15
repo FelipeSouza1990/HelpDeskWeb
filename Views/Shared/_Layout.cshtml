@@ -13,12 +13,32 @@
       <a class="brand" asp-controller="Tickets" asp-action="Index">
         <span class="dot"></span> HelpDesk
       </a>
+
       <a asp-controller="Tickets" asp-action="Index">Tickets</a>
       <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
       <a href="/swagger" target="_blank">Swagger</a>
+
       <span class="spacer"></span>
-      <button class="theme-btn" onclick="toggleTheme()"
-        title="Alternar modo claro/escuro">
+
+      @if (User?.Identity?.IsAuthenticated ?? false)
+      {
+        <span style="opacity:.8; margin-right:6px;">Olá, @User.Identity!.Name</span>
+        <form asp-area="Identity"
+              asp-page="/Account/Logout"
+              asp-route-returnUrl="/"
+              method="post"
+              asp-antiforgery="true"
+              style="display:inline">
+          <button class="btn" type="submit" title="Sair">Sair</button>
+        </form>
+      }
+      else
+      {
+        <a class="btn" asp-area="Identity" asp-page="/Account/Login">Entrar</a>
+        <a class="btn primary" asp-area="Identity" asp-page="/Account/Register">Cadastrar</a>
+      }
+
+      <button class="theme-btn" onclick="toggleTheme()" title="Alternar modo claro/escuro" style="margin-left:8px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64 13a9 9 0 1 1-10.63-10.7 1 1 0 0 1 1.11 1.46A7 7 0 1 0 20.18 12a1 1 0 0 1 1.46 1z"/></svg>
         Tema
       </button>
@@ -32,6 +52,17 @@
   <div class="toast-area"></div>
 
   <script src="~/js/site.js" asp-append-version="true"></script>
+
+  @* Toast global via TempData["msg"], se definido *@
+  @if (TempData["msg"] is string m)
+  {
+    <script>
+      window.addEventListener('DOMContentLoaded', function () {
+        if (typeof toast === 'function') toast(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(m)));
+      });
+    </script>
+  }
+
   @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
