@@ -7,6 +7,12 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 // Serilog
 builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
 
@@ -32,8 +38,26 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+}
+
+// Swagger: habilita em Development OU quando ligado por config/env
+var swaggerEnabled =
+    app.Environment.IsDevelopment()
+    || app.Configuration.GetValue<bool>("Swagger:Enable")
+    || string.Equals(
+        Environment.GetEnvironmentVariable("SWAGGER_ENABLE"),
+        "true",
+        StringComparison.OrdinalIgnoreCase
+    );
+
+if (swaggerEnabled)
+{
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(o =>
+    {
+        o.SwaggerEndpoint("/swagger/v1/swagger.json", "HelpDesk API v1");
+        // o.RoutePrefix = string.Empty; // opcional: coloca Swagger na raiz "/"
+    });
 }
 
 // MIGRATE antes do seed
