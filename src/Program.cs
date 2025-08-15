@@ -50,13 +50,19 @@ var swaggerEnabled =
         StringComparison.OrdinalIgnoreCase
     );
 
+app.Logger.LogInformation(
+    "Swagger enabled? {Enabled} | Env: {Env}",
+    swaggerEnabled,
+    app.Environment.EnvironmentName
+);
+
 if (swaggerEnabled)
 {
     app.UseSwagger();
     app.UseSwaggerUI(o =>
     {
         o.SwaggerEndpoint("/swagger/v1/swagger.json", "HelpDesk API v1");
-        // o.RoutePrefix = string.Empty; // opcional: coloca Swagger na raiz "/"
+        // o.RoutePrefix = string.Empty; // descomente se quiser o Swagger na raiz "/"
     });
 }
 

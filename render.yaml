@@ -1,0 +1,25 @@
+# render.yaml — HelpDeskWeb
+services:
+  - type: web
+    name: helpdeskweb              
+    runtime: docker               
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile   
+    healthCheckPath: /health
+    autoDeployTrigger: commit      
+
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: SWAGGER_ENABLE
+        value: "true"
+      - key: Database__RelativePath
+        value: /var/data/helpdesk.db
+
+    # Disco persistente para o SQLite
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
